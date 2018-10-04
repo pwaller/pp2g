@@ -1,6 +1,6 @@
 # pp2g: print python to go
 
-This is a (currently incomplete and abandoned) experiment in translation to assist in translating python to Go. The goal is not to do a perfect job, but enough that a human can come in and translate it to standalone idiomatic Go.
+This is a (currently incomplete and abandoned) experiment to assist in translating python to Go. The goal is not to do a perfect job, but enough that a human can come in and translate it to standalone idiomatic Go.
 
 ### You might also like
 
