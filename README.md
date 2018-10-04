@@ -2,6 +2,14 @@
 
 This is a (currently incomplete and abandoned) experiment in translation to assist in translating python to Go. The goal is not to do a perfect job, but enough that a human can come in and translate it to standalone idiomatic Go.
 
+### You might also like
+
+* [pytogo](https://gitlab.com/esr/pytogo), which takes a similar approach, though it works with lots of regexes rather than parsing the AST.
+* [grumpy](https://github.com/google/grumpy) an effort by a Google engineer to translate some code which runs Youtube from Python to Go. As I understand it, it produces runnable code, but it isn't idiomatic or standalone, and implements lots of Python.
+* [gython](https://github.com/gython/Gython) which describes itself as "a transpiler written in Python that converts a python like language into Go".
+
+### About
+
 The method it takes is essentially to pretty print the python AST. The only reason it doesn't do this from Go is that there wasn't a python parser written in Go at the time and I wasn't in the mood for writing one :)
 
 To give you a feel of it, this is how it currently translates [`bisect.py`](https://github.com/python/cpython/blob/5f5a7781c8bf7bcc476d3e05d980711be3920724/Lib/bisect.py) from the standard library. You'll note that some constructs aren't yet translated, such as while loops and try blocks. Everything is translated into a comment so that it can be used as a guide.
