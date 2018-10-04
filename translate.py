@@ -8,7 +8,7 @@ def indent(t, depth=1):
     """
     Reverse of dedent
     """
-    spacing = "    " * depth
+    spacing = "\t" * depth
     return t.replace("\n", "\n" + spacing)
 
 import name
@@ -29,7 +29,8 @@ def name_(node: ast.Name, ctx):
 
 
 def str_(node: ast.Str, ctx):
-    return '"{}"'.format(node.s)
+    return repr(node.s).translate(str.maketrans({"'": '"', '"': "'"}))
+    # return '"{}"'.format(node.s)
 
 
 def aug_assign(node: ast.AugAssign, ctx):
@@ -110,7 +111,7 @@ def call(node: ast.Call, ctx):
     args = [dispatch(a, ctx) for a in node.args]
     for k in node.keywords:
         args.append(dispatch(k, ctx))
-    if node.starargs:
+    if hasattr(node, "starargs") and node.starargs:
         args.append("*" + dispatch(node.starargs, ctx))
     return "{}({})".format(func, ", ".join(args))
     # return "// TODO call {}".format(dispatch(node.func))
@@ -160,7 +161,7 @@ def remove_enumerate(node: Node, ctx):
 def for_(node: ast.For, ctx):
     fmt = dedent("""\
         for {loop} {{
-            {body}
+        \t{body}
         }}
     """).rstrip()
 
@@ -183,7 +184,7 @@ def for_(node: ast.For, ctx):
 def if_(node: ast.If, ctx):
     fmt = dedent("""\
         if {test} {{
-            {body}
+        \t{body}
         }}
     """).rstrip("\n")
 
@@ -314,7 +315,7 @@ def parse_docstring(node: ast.FunctionDef):
     value = first.value
     if not isinstance(value, ast.Str):
         return "", node.body
-    s = "\n// {}".format(value.s.strip().replace("\n", "\n// "))
+    s = "\n// {}".format(value.s.strip().replace("\n", "\n// ")) + "\n"
     return s, node.body[1:]
 
 
@@ -325,9 +326,8 @@ def function_def(node: ast.FunctionDef, ctx):
 
     name_ = name.to_camel(node.name)
     fmt = dedent("""\
-        {docstring}
-        func {name}({args}) {returns}{{
-            {body}
+        {docstring}func {name}({args}) {returns}{{
+        \t{body}
         }}
     """).rstrip("\n")
 
@@ -337,7 +337,7 @@ def function_def(node: ast.FunctionDef, ctx):
         fmt = dedent("""\
             {docstring}
             {name} := func({args}) {returns}{{
-                {body}
+            \t{body}
             }}
         """).rstrip("\n")
     elif isinstance(ctx, ClassDef):
@@ -345,7 +345,7 @@ def function_def(node: ast.FunctionDef, ctx):
         fmt = dedent("""\
             {docstring}
             func ({n} *{cls}) {name}({args}) {returns}{{
-                {body}
+            \t{body}
             }}
         """).rstrip("\n")
         cls = ctx.name
@@ -354,12 +354,17 @@ def function_def(node: ast.FunctionDef, ctx):
 
     s, b = parse_docstring(node)
 
+    content = indent(body(b, newctx))
+    def comment(content):
+        return "// " + content.replace("\n\t", "\n\t// ")
+    content = comment(content)
+
     return fmt.format(
         name=name_,
         args=dispatch(node.args, ctx),
         returns=returns(node.returns, ctx),
         docstring=s,
-        body=indent(body(b, newctx)),
+        body=content,
         cls=cls,
         n=n,
     )
